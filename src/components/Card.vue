@@ -1,9 +1,13 @@
 <script setup>
+import { inject } from "vue";
 defineProps({
+  id: Number,
   imageUrl: String,
   title: String,
   price: Number,
-  onClickAdd: Function,
+  isFavorite: Boolean,
+  isAdded: Boolean,
+  onClickFavorite: Function,
 });
 </script>
 
@@ -16,7 +20,7 @@ defineProps({
         class="absolute top-0 left-0"
         :src="isFavorite ? '/like-2.svg' : '/like-1.svg'"
         alt="Like"
-        @click.stop="onClickFavorite"
+        @click.stop="onClickFavorite(id)"
       />
       <img :src="imageUrl" alt="Sneakers 1" />
     </div>

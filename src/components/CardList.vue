@@ -4,10 +4,8 @@ import Card from "./Card.vue";
 defineProps({
   items: Array,
 });
+const emit = defineEmits(["addToFavorite"]);
 
-const onClickAdd = () => {
-  console.log("onClickAdd");
-};
 </script>
 
 <template>
@@ -15,10 +13,12 @@ const onClickAdd = () => {
     <Card
       v-for="item in items"
       :key="item.id"
+      :id="item.id"
       :title="item.title"
       :imageUrl="item.imageUrl"
       :price="item.price"
-      :onClickAdd="onClickAdd"
+      :onClickFavorite="() => emit('addToFavorite', item)"
+      :isFavorite="item.isFavorite"
     />
   </div>
 </template>

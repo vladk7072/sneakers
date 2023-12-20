@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref, watch } from "vue";
+import { onMounted, provide, reactive, ref, watch } from "vue";
 import Header from "./components/Header.vue";
 import CardList from "./components/CardList.vue";
 import Drawer from "./components/Drawer.vue";
@@ -7,38 +7,77 @@ import axios from "axios";
 
 const items = ref([]);
 const filters = reactive({
-  sortBy: "",
+  sortBy: "title",
   searchQuery: "",
 });
 
 const onChangeSelect = (e) => {
   filters.sortBy = e.target.value;
 };
+const onChangeSearchInput = (e) => {
+  filters.searchQuery = e.target.value;
+};
 
-onMounted(async () => {
+const fetchFavorites = async () => {
   try {
-    const { data } = await axios.get(
-      "https://1d8397323be8df4a.mokky.dev/items"
+    const { data: favorites } = await axios.get(
+      `https://1d8397323be8df4a.mokky.dev/favorites`
     );
-    items.value = data;
+    items.value = items.value.map((item) => {
+      const favorite = favorites.find(
+        (favorite) => favorite.parentId === item.id
+      );
+      if (!favorite) {
+        return item;
+      }
+
+      return {
+        ...item,
+        isFavorite: true,
+        favoriteId: favorite.id,
+      };
+    });
   } catch (err) {
     console.log(err);
   }
-});
+};
 
-watch(
-  () => filters.sortBy,
-  async () => {
-    try {
-      const { data } = await axios.get(
-        "https://1d8397323be8df4a.mokky.dev/items?sortBy=" + filters.sortBy
-      );
-      items.value = data;
-    } catch (err) {
-      console.log(err);
+const addToFavorite = async (item) => {
+  item.isFavorite = !item.isFavorite;
+};
+
+const fetchItems = async () => {
+  try {
+    const params = { 
+      sortBy: filters.sortBy,
+    };
+
+    if (filters.searchQuery) {
+      params.title = `*${filters.searchQuery}*`;
     }
+
+    const { data } = await axios.get(
+      `https://1d8397323be8df4a.mokky.dev/items`,
+      {
+        params,
+      }
+    );
+    items.value = data.map((obj) => ({
+      ...obj,
+      isFavorite: false,
+      isAdded: false,
+    }));
+  } catch (err) {
+    console.log(err);
   }
-);
+};
+
+onMounted(async () => {
+  await fetchItems();
+  await fetchFavorites();
+});
+watch(filters, fetchItems);
+
 </script>
 
 <template>
@@ -63,13 +102,14 @@ watch(
             alt=""
           />
           <input
+            @input="onChangeSearchInput"
             class="border rounded-md py-2 pl-10 pr-4 outline-none focus:border-gray-400"
             type="text"
           />
         </div>
       </div>
       <div class="mt-10">
-        <CardList :items="items" />
+        <CardList :items="items" @addToFavorite="addToFavorite" />
       </div>
     </div>
   </main>
