@@ -1,5 +1,5 @@
 <script setup>
-import { inject } from "vue";
+
 defineProps({
   id: Number,
   imageUrl: String,
@@ -8,6 +8,7 @@ defineProps({
   isFavorite: Boolean,
   isAdded: Boolean,
   onClickFavorite: Function,
+  onClickAddPlus: Function
 });
 </script>
 
@@ -20,7 +21,7 @@ defineProps({
         class="absolute top-0 left-0"
         :src="isFavorite ? '/like-2.svg' : '/like-1.svg'"
         alt="Like"
-        @click.stop="onClickFavorite(id)"
+        @click.stop="onClickFavorite"
       />
       <img :src="imageUrl" alt="Sneakers 1" />
     </div>
@@ -31,7 +32,7 @@ defineProps({
         <b>{{ price }} грн.</b>
       </div>
       <img
-        @click.stop="onClickAdd"
+        @click.stop="onClickAddPlus"
         :src="isAdded ? '/checked.svg' : '/plus.svg'"
         alt="Plus"
       />
