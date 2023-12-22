@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, provide, reactive, ref, watch } from "vue";
+import { computed, onMounted, provide, reactive, ref, watch } from "vue";
 import Header from "./components/Header.vue";
 import CardList from "./components/CardList.vue";
 import Drawer from "./components/Drawer.vue";
@@ -7,6 +7,8 @@ import axios from "axios";
 
 const items = ref([]);
 const cart = ref([]);
+const isCreatingOrder = ref(false);
+
 const drawerOpen = ref(false);
 
 const closeDrawer = () => {
@@ -17,10 +19,37 @@ const openDrawer = () => {
   drawerOpen.value = true;
 };
 
+const totalPrice = computed(() => {
+  return cart.value.reduce((acc, item) => acc + item.price, 0);
+});
+const vatPrice = computed(() => {
+  return Math.round((totalPrice.value * 5) / 100);
+});
+
 const filters = reactive({
   sortBy: "title",
   searchQuery: "",
 });
+
+const createOrder = async () => {
+  try {
+    isCreatingOrder.value = true;
+    const { data } = await axios.post(
+      `https://1d8397323be8df4a.mokky.dev/orders`,
+      {
+        items: cart.value,
+        totalPrice: totalPrice.value,
+      }
+    );
+    cart.value = [];
+    return data;
+  } catch (err) {
+    isCreatingOrder.value = false;
+    console.log(err);
+  } finally {
+    isCreatingOrder.value = false;
+  }
+};
 
 const onClickAddPlus = (item) => {
   if (!item.isAdded) {
@@ -129,6 +158,12 @@ onMounted(async () => {
   await fetchFavorites();
 });
 watch(filters, fetchItems);
+watch(cart, () => {
+  items.value = items.value.map((item) => ({
+    ...item,
+    isAdded: false,
+  }));
+});
 
 provide("cart", {
   cart,
@@ -140,9 +175,15 @@ provide("cart", {
 </script>
 
 <template>
-  <Drawer v-if="drawerOpen" />
+  <Drawer
+    v-if="drawerOpen"
+    :total-price="totalPrice"
+    :vat-price="vatPrice"
+    @create-order="createOrder"
+    :is-creating-order="isCreatingOrder"
+  />
   <main class="w-4/5 mx-auto bg-white rounded-xl shadow-xl my-14">
-    <Header @open-drawer="openDrawer" />
+    <Header :total-price="totalPrice" @open-drawer="openDrawer" />
     <div class="p-10">
       <div class="flex justify-between items-center mb-8">
         <h2 class="text-3xl font-bold mr-auto">Все кроссовки:</h2>

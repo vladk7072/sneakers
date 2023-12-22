@@ -19,7 +19,7 @@ defineProps({
     <div class="flex flex-col mr-auto">
       <p>{{ item.title }}</p>
       <span
-        ><b>{{ item.price }} uan</b></span
+        ><b>{{ item.price }} $</b></span
       >
     </div>
     <img
