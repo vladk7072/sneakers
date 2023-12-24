@@ -29,9 +29,9 @@ const buttonDisabled = computed(() => {
     class="bg-white w-1/3 z-20 fixed right-0 top-0 bottom-0 p-8 flex flex-col"
   >
     <DrawerHead />
-    <InfoBlock title="Корзина пустая" description="Добавьте хотя бы одну пару кроссовок, чтобы сделать заказ" image-url="/package-icon.png" />
-    <CartItemList />
-    <div class="flex flex-col gap-4 mb-7 mt-auto">
+    <InfoBlock v-if="!totalPrice" title="Корзина пустая" description="Добавьте хотя бы одну пару кроссовок, чтобы сделать заказ" image-url="/package-icon.png" />
+    <CartItemList v-if="totalPrice" />
+    <div v-if="totalPrice" class="flex flex-col gap-4 mb-7 mt-auto">
       <div class="flex justify-between items-end gap-1">
         <span class="whitespace-nowrap">Итого:</span>
         <div class="border-b border-dashed w-full"></div>
